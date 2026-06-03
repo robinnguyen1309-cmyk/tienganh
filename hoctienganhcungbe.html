@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mega Safari 5D - Learning Pro</title>
+    <style>
+        :root { --main-bg: #064e3b; --accent: #00ffcc; }
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body { margin: 0; background: var(--main-bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 80px; }
+        
+        h1 { font-size: 18px; margin: 15px 0; color: var(--accent); }
+        .quest-box { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.3); padding: 12px 20px; border-radius: 30px; border: 2px solid var(--accent); margin-bottom: 20px; cursor: pointer; }
+        
+        /* Bố cục thẻ bài chuẩn học tập */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; width: 95%; max-width: 800px; }
+        .card { background: #fff; border-radius: 15px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: 0.2s; }
+        .card:active { transform: scale(0.9); }
+        
+        /* Phần trên: Số/Chữ to rõ */
+        .top-part { font-size: 28px; font-weight: bold; color: #1e293b; }
+        /* Phần dưới: Chữ tiếng Anh nhỏ gọn */
+        .bottom-part { color: #555; font-size: 10px; font-weight: 800; margin-top: 5px; text-transform: uppercase; border-top: 1px solid #ddd; padding-top: 5px; width: 100%; text-align: center; }
+
+        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 65px; background: #0f172a; display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #334155; }
+        .tab-btn { color: #94a3b8; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .tab-btn.active { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <h1 id="appTitle">LEARNING SAFARI</h1>
+    <div class="quest-box" onclick="speakQuest()">🐲 Find: <span id="targetWord" style="color:#ffee00">...</span></div>
+    <div class="grid" id="mainGrid"></div>
+
+    <div class="tab-bar">
+        <div class="tab-btn active" id="tabA" onclick="setMode('animals')">🦁 Animals</div>
+        <div class="tab-btn" id="tabN" onclick="setMode('numbers')">🔢 1-40</div>
+        <div class="tab-btn" id="tabC" onclick="setMode('alphabet')">🔤 A-Z</div>
+    </div>
+
+<script>
+    const animals = [
+        {val:'🦁',txt:'Lion'},{val:'🐯',txt:'Tiger'},{val:'🐘',txt:'Elephant'},{val:'🐵',txt:'Monkey'},{val:'🐶',txt:'Dog'},{val:'🐱',txt:'Cat'},{val:'🦆',txt:'Duck'},{val:'🐲',txt:'Dragon'},{val:'🐼',txt:'Panda'},{val:'🐰',txt:'Rabbit'},
+        {val:'🐬',txt:'Dolphin'},{val:'🦒',txt:'Giraffe'},{val:'🦊',txt:'Fox'},{val:'🐻',txt:'Bear'},{val:'🐸',txt:'Frog'},{val:'🦉',txt:'Owl'},{val:'🐮',txt:'Cow'},{val:'🐷',txt:'Pig'},{val:'🐑',txt:'Sheep'},{val:'🐴',txt:'Horse'},
+        {val:'🐔',txt:'Chicken'},{val:'🐧',txt:'Penguin'},{val:'🐨',txt:'Koala'},{val:'🐆',txt:'Leopard'},{val:'🐺',txt:'Wolf'},{val:'🦌',txt:'Deer'},{val:'🦘',txt:'Kangaroo'},{val:'🦏',txt:'Rhino'},{val:'🦛',txt:'Hippo'},{val:'🦅',txt:'Eagle'},
+        {val:'🐊',txt:'Crocodile'},{val:'🐢',txt:'Turtle'},{val:'🦈',txt:'Shark'},{val:'🐳',txt:'Whale'},{val:'🐝',txt:'Bee'},{val:'🦋',txt:'Butterfly'},{val:'🐙',txt:'Octopus'},{val:'🐍',txt:'Snake'},{val:'🦓',txt:'Zebra'},{val:'🐪',txt:'Camel'}
+    ];
+    const numbers = Array.from({length: 40}, (_, i) => ({val: i+1, txt: ["One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen","Twenty","Twenty-one","Twenty-two","Twenty-three","Twenty-four","Twenty-five","Twenty-six","Twenty-seven","Twenty-eight","Twenty-nine","Thirty","Thirty-one","Thirty-two","Thirty-three","Thirty-four","Thirty-five","Thirty-six","Thirty-seven","Thirty-eight","Thirty-nine","Forty"][i]}));
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(char => ({val: char, txt: char}));
+
+    let mode = 'animals';
+    let currentQuest = "";
+
+    function render() {
+        const pool = mode === 'animals' ? animals : (mode === 'numbers' ? numbers : alphabet);
+        const grid = document.getElementById("mainGrid");
+        grid.innerHTML = '';
+        [...pool].sort(() => Math.random() - 0.5).forEach(item => {
+            const card = document.createElement("div");
+            card.className = "card";
+            // Bố cục mới: Trên là số/hình/chữ, Dưới là tiếng Anh
+            card.innerHTML = `<div class="top-part">${item.val}</div><div class="bottom-part">${item.txt}</div>`;
+            card.onclick = () => {
+                if(item.txt === currentQuest) { speak("Good job!"); nextQuest(); }
+                else { speak(item.txt); }
+            };
+            grid.appendChild(card);
+        });
+    }
+
+    function nextQuest() {
+        const pool = mode === 'animals' ? animals : (mode === 'numbers' ? numbers : alphabet);
+        currentQuest = pool[Math.floor(Math.random() * pool.length)].txt;
+        document.getElementById("targetWord").innerText = currentQuest;
+        speakQuest();
+    }
+
+    function speakQuest() { speak("Where is " + currentQuest); }
+
+    function setMode(m) {
+        mode = m;
+        document.getElementById("appTitle").innerText = "MEGA SAFARI: " + m.toUpperCase();
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(m === 'animals' ? 'tabA' : (m === 'numbers' ? 'tabN' : 'tabC')).classList.add('active');
+        render();
+        nextQuest();
+    }
+
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        window.speechSynthesis.speak(u);
+    }
+
+    setMode('animals');
+</script>
+</body>
+</html>
